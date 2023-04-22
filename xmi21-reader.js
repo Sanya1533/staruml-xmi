@@ -330,8 +330,26 @@ function loadFromFile (filename) {
   // Parse XMI
   var parser = new DOMParser()
   var dom = parser.parseFromString(data, 'text/xml')
+  
   var XMINode = dom.getElementsByTagName('xmi:XMI')[0]
-
+  if (typeof(XMINode) == 'undefined') {
+    XMINode = dom.getElementsByTagName('XMI')[0]
+  }
+  
+  if (typeof(XMINode) == 'undefined') {
+    // we are desperate now, try to start from UML:Model
+    var XMIModelNode = dom.getElementsByTagName('uml:Model')[0]
+    if (typeof(XMIModelNode) != 'undefined' && XMIModelNode != null && typeof(XMIModelNode.parentNode) != 'undefined' ) {
+      XMINode = XMIModelNode.parentNode // this might not be the xmi node, but seems equivalent enough to us
+    }
+  }
+  
+  if (typeof(XMINode) == 'undefined') {
+    // still no luck, out of options
+    window.alert('Could not find root element, Import failed.')
+    return
+  }
+  
   // Read top-level elements
   var topLevelElements = []
   for (var i = 0, len = XMINode.childNodes.length; i < len; i++) {
